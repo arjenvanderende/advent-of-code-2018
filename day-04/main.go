@@ -57,6 +57,7 @@ func main() {
 
 	fmt.Println(schedule)
 	fmt.Println(schedule.laziest())
+	fmt.Println(schedule.frequent())
 }
 
 type schedule struct {
@@ -105,6 +106,30 @@ func (s *schedule) laziest() string {
 		}
 	}
 	return fmt.Sprintf("Guard: %d, Minute: %d, Best: %d", guard, minute, guard*minute)
+}
+
+type frequency map[int]int
+
+func (s *schedule) frequent() string {
+	best, guard, minute := 0, 0, 0
+
+	r := make(map[int]frequency)
+	for _, shift := range s.shifts {
+		if _, ok := r[shift.guard]; !ok {
+			r[shift.guard] = make(frequency)
+		}
+
+		for m := range shift.asleep {
+			r[shift.guard][m]++
+			if r[shift.guard][m] > best {
+				guard = shift.guard
+				best = r[shift.guard][m]
+				minute = m
+			}
+		}
+	}
+
+	return fmt.Sprintf("Guard: %d, Minute: %d, Frequent: %d", guard, minute, guard*minute)
 }
 
 func (s *schedule) String() string {
